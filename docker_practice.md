@@ -342,5 +342,80 @@ chlskgus7895030@c6r5s5 docker-web-lab % docker build -t my-nginx-lab:v1 .
 chlskgus7895030@c6r5s5 docker-web-lab % docker run -d --name my-nginx-web -p 8080:80 my-nginx-lab:v1
 docker: Error response from daemon: Conflict. The container name "/my-nginx-web" is already in use by container "31f48e61031da2d68586519254281c7ee96ac9d606c902eb71a277c55f4b3b2f". You have to remove (or rename) that container to be able to reuse that name.
 
+
+chlskgus7895030@c6r5s5 docker-web-lab % cd ~/docker-web-lab
+chlskgus7895030@c6r5s5 docker-web-lab % docker run -d --name my-nginx-bind -p 8081:80 -v "$(pwd)/app:/usr/share/nginx/html" nginx:alpine
+Unable to find image 'nginx:alpine' locally
+alpine: Pulling from library/nginx
+55afa1ecc21d: Already exists 
+3cd534fe98c6: Already exists 
+1223f016b4e4: Already exists 
+62bec68d7c31: Already exists 
+46f977ee452f: Already exists 
+d0008c891db4: Already exists 
+390dc935348d: Already exists 
+46519e7231d2: Already exists 
+Digest: sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752
+Status: Downloaded newer image for nginx:alpine
+94176e3287bdac2a79d10761e73d00f5884f274e3fb7a77b703a8c058b7c0fd6
+chlskgus7895030@c6r5s5 docker-web-lab % curl http://localhost:8081
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Docker Web Lab</title>
+</head>
+<body>
+  <h1>Docker 커스텀 이미지 실습 성공</h1>
+  <p>베이스 이미지: nginx:alpine</p>
+  <p>작성자: 학생 실습 페이지</p>
+</body>
+</html>
+chlskgus7895030@c6r5s5 docker-web-lab % cat > app/index.html <<'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Bind Mount Test</title>
+</head>
+<body>
+  <h1>바인드 마운트 변경 반영 성공</h1>
+  <p>호스트에서 수정한 내용입니다.</p>
+</body>
+</html>
+EOF
+chlskgus7895030@c6r5s5 docker-web-lab % curl http://localhost:8081
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Bind Mount Test</title>
+</head>
+<body>
+  <h1>바인드 마운트 변경 반영 성공</h1>
+  <p>호스트에서 수정한 내용입니다.</p>
+</body>
+</html>
+chlskgus7895030@c6r5s5 docker-web-lab % docker volume create mydata
+mydata
+chlskgus7895030@c6r5s5 docker-web-lab % docker volume ls
+DRIVER    VOLUME NAME
+local     mydata
+chlskgus7895030@c6r5s5 docker-web-lab % docker run -dit --name vol-test -v mydata:/data ubuntu bash
+4b04d050d8124f6f39b40188e4435323c6e5945d8e206d071de42f178d83ed2f
+chlskgus7895030@c6r5s5 docker-web-lab % docker exec vol-test bash -c 'echo "hello docker volume" > /data/message.txt && cat /data/message.txt'
+hello docker volume
+
 Run 'docker run --help' for more information
+
+chlskgus7895030@c6r5s5 docker-web-lab % docker inspect vol-test
+
+chlskgus7895030@c6r5s5 docker-web-lab % docker exec vol-test cat /data/message.txt
+hello docker volume
+chlskgus7895030@c6r5s5 docker-web-lab % docker rm -f vol-test
+vol-test
+chlskgus7895030@c6r5s5 docker-web-lab % docker run -dit --name vol-test2 -v mydata:/data ubuntu bash
+85c3637c0a92930bed6a66948bc3d7cf198cfdc2819b8de85c1a72b4b34ef063
+chlskgus7895030@c6r5s5 docker-web-lab % docker exec vol-test2 cat /data/message.txt
+hello docker volume
 
