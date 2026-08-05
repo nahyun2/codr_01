@@ -231,4 +231,116 @@ CONTAINER ID   IMAGE         COMMAND                   CREATED          STATUS  
 f3798749f130   nginx         "/docker-entrypoint.…"   38 minutes ago   Exited (0) 29 minutes ago             nginx-lab
 chlskgus7895030@c6r5s5 ~ % 
 
+chlskgus7895030@c6r5s5 ~ % mkdir -p ~/docker-web-lab/app
+cd ~/docker-web-lab
+chlskgus7895030@c6r5s5 docker-web-lab % cat > app/index.html <<'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Docker Web Lab</title>
+</head>
+<body>
+  <h1>Docker 커스텀 이미지 실습 성공</h1>
+  <p>베이스 이미지: nginx:alpine</p>
+  <p>작성자: 학생 실습 페이지</p>
+</body>
+</html>
+EOF
+chlskgus7895030@c6r5s5 docker-web-lab % cat > Dockerfile <<'EOF'
+FROM nginx:alpine
+
+RUN apk add --no-cache curl
+
+ENV APP_NAME="docker-web-lab"
+
+COPY app/index.html /usr/share/nginx/html/index.html
+
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD curl -f http://localhost/ || exit 1
+EOF
+
+chlskgus7895030@c6r5s5 docker-web-lab % docker build -t my-nginx-lab:v1 .
+[+] Building 7.5s (8/8) FINISHED                                   docker:orbstack
+ => [internal] load build definition from Dockerfile                          0.2s
+ => => transferring dockerfile: 264B                                          0.0s
+ => [internal] load metadata for docker.io/library/nginx:alpine               2.5s
+ => [internal] load .dockerignore                                             0.1s
+ => => transferring context: 2B                                               0.0s
+ => [1/3] FROM docker.io/library/nginx:alpine@sha256:4a73073bd557c65b759505d  3.0s
+ => => resolve docker.io/library/nginx:alpine@sha256:4a73073bd557c65b759505d  0.2s
+ => => sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c 10.33kB / 10.33kB  0.0s
+ => => sha256:1d40e3eb3bf4f138de1d67193f2aa5309fcaf343eb5ffa 2.50kB / 2.50kB  0.0s
+ => => sha256:f0ba77f796e57c6fa89ae7f4fdad1665d6fcbd8e3f21 12.32kB / 12.32kB  0.0s
+ => => sha256:55afa1ecc21d2bb5e5045f32dafee56272ffd89860bac2 3.85MB / 3.85MB  0.4s
+ => => sha256:1223f016b4e4a2c21f7c49d4837fbfd47a9da6436b511690ca 627B / 627B  0.6s
+ => => sha256:3cd534fe98c64d68a1f4f1c83abb8d5cba7ecfd7be88e5 1.89MB / 1.89MB  0.5s
+ => => extracting sha256:55afa1ecc21d2bb5e5045f32dafee56272ffd89860bac26f6c3  0.1s
+ => => sha256:62bec68d7c31c4c8a19d812d84da5f7748e54690c037979945 957B / 957B  0.7s
+ => => extracting sha256:3cd534fe98c64d68a1f4f1c83abb8d5cba7ecfd7be88e592389  0.1s
+ => => sha256:46f977ee452f4399c208714afa034868d6056864f8a0cf3c64 404B / 404B  0.8s
+ => => sha256:390dc935348d8070e695fbaae2a4bb114fb9e69c59f628 1.40kB / 1.40kB  1.0s
+ => => sha256:d0008c891db48b5f526d914bce9e8d889fe1a9d1f08291 1.21kB / 1.21kB  0.9s
+ => => extracting sha256:1223f016b4e4a2c21f7c49d4837fbfd47a9da6436b511690ca1  0.0s
+ => => extracting sha256:62bec68d7c31c4c8a19d812d84da5f7748e54690c037979945b  0.0s
+ => => sha256:46519e7231d2eb5604df229beb44d59719a489eaa7ac 20.31MB / 20.31MB  1.3s
+ => => extracting sha256:46f977ee452f4399c208714afa034868d6056864f8a0cf3c643  0.0s
+ => => extracting sha256:d0008c891db48b5f526d914bce9e8d889fe1a9d1f08291ae03f  0.0s
+ => => extracting sha256:390dc935348d8070e695fbaae2a4bb114fb9e69c59f628e7576  0.0s
+ => => extracting sha256:46519e7231d2eb5604df229beb44d59719a489eaa7aca529825  0.4s
+ => [internal] load build context                                             0.2s
+ => => transferring context: 337B                                             0.0s
+ => [2/3] RUN apk add --no-cache curl                                         0.8s
+ => [3/3] COPY app/index.html /usr/share/nginx/html/index.html                0.2s 
+ => exporting to image                                                        0.2s
+ => => exporting layers                                                       0.2s
+ => => writing image sha256:96160b250527206d0f5a5ec87dd08632546ab99234dd6538  0.0s
+ => => naming to docker.io/library/my-nginx-lab:v1                            0.0s
+chlskgus7895030@c6r5s5 docker-web-lab % docker run -d --name my-nginx-web -p 8080:80 my-nginx-lab:v1
+31f48e61031da2d68586519254281c7ee96ac9d606c902eb71a277c55f4b3b2f
+chlskgus7895030@c6r5s5 docker-web-lab % docker ps
+CONTAINER ID   IMAGE             COMMAND                   CREATED          STATUS                             PORTS                                     NAMES
+31f48e61031d   my-nginx-lab:v1   "/docker-entrypoint.…"   11 seconds ago   Up 10 seconds (health: starting)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   my-nginx-web
+chlskgus7895030@c6r5s5 docker-web-lab % docker logs my-nginx-web
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2026/08/05 12:03:24 [notice] 1#1: using the "epoll" event method
+2026/08/05 12:03:24 [notice] 1#1: nginx/1.31.3
+2026/08/05 12:03:24 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0) 
+2026/08/05 12:03:24 [notice] 1#1: OS: Linux 6.17.8-orbstack-00308-g8f9c941121b1
+2026/08/05 12:03:24 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 20480:1048576
+2026/08/05 12:03:24 [notice] 1#1: start worker processes
+2026/08/05 12:03:24 [notice] 1#1: start worker process 31
+2026/08/05 12:03:24 [notice] 1#1: start worker process 32
+2026/08/05 12:03:24 [notice] 1#1: start worker process 33
+2026/08/05 12:03:24 [notice] 1#1: start worker process 34
+2026/08/05 12:03:24 [notice] 1#1: start worker process 35
+2026/08/05 12:03:24 [notice] 1#1: start worker process 36
+::1 - - [05/Aug/2026:12:03:54 +0000] "GET / HTTP/1.1" 200 267 "-" "curl/8.21.0" "-"
+chlskgus7895030@c6r5s5 docker-web-lab % docker build -t my-nginx-lab:v1 .
+[+] Building 1.3s (8/8) FINISHED                                                                                                                       docker:orbstack
+ => [internal] load build definition from Dockerfile                                                                                                              0.1s
+ => => transferring dockerfile: 264B                                                                                                                              0.0s
+ => [internal] load metadata for docker.io/library/nginx:alpine                                                                                                   0.8s
+ => [internal] load .dockerignore                                                                                                                                 0.1s
+ => => transferring context: 2B                                                                                                                                   0.0s
+ => [1/3] FROM docker.io/library/nginx:alpine@sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752                                             0.0s
+ => [internal] load build context                                                                                                                                 0.1s
+ => => transferring context: 59B                                                                                                                                  0.0s
+ => CACHED [2/3] RUN apk add --no-cache curl                                                                                                                      0.0s
+ => CACHED [3/3] COPY app/index.html /usr/share/nginx/html/index.html                                                                                             0.0s
+ => exporting to image                                                                                                                                            0.0s
+ => => exporting layers                                                                                                                                           0.0s
+ => => writing image sha256:96160b250527206d0f5a5ec87dd08632546ab99234dd65386cafd7103f7badc9                                                                      0.0s
+ => => naming to docker.io/library/my-nginx-lab:v1                                                                                                                0.0s
+chlskgus7895030@c6r5s5 docker-web-lab % docker run -d --name my-nginx-web -p 8080:80 my-nginx-lab:v1
+docker: Error response from daemon: Conflict. The container name "/my-nginx-web" is already in use by container "31f48e61031da2d68586519254281c7ee96ac9d606c902eb71a277c55f4b3b2f". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
 
