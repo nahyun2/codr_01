@@ -160,4 +160,75 @@ CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 chlskgus7895030@c6r5s5 ~ % docker ps -a
 CONTAINER ID   IMAGE     COMMAND                   CREATED         STATUS                      PORTS     NAMES
 f3798749f130   nginx     "/docker-entrypoint.…"   9 minutes ago   Exited (0) 25 seconds ago             nginx-lab
+
+chlskgus7895030@c6r5s5 ~ % docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+4f55086f7dd0: Pull complete 
+Digest: sha256:7f4da0fc94bcece205a8c0b6f4d11c8196924654ffe5c4d1aa439b7f632048b2
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+chlskgus7895030@c6r5s5 ~ % docker run -it --name ubuntu-lab ubuntu bash
+Unable to find image 'ubuntu:latest' locally
+latest: Pulling from library/ubuntu
+617772c7d19b: Pull complete 
+a7fb98a8eddd: Pull complete 
+Digest: sha256:678c6550cc43645e08669028bc177f50be4e7c5b8cca677067b1914d4afc7a03
+Status: Downloaded newer image for ubuntu:latest
+root@39c52e95b712:/# #
+root@39c52e95b712:/# #   
+root@39c52e95b712:/# ls   
+bin   dev  home  lib64  mnt  proc  run   srv  tmp  var
+boot  etc  lib   media  opt  root  sbin  sys  usr
+root@39c52e95b712:/# echo "hello docker"
+hello docker
+root@39c52e95b712:/# pwd
+/
+root@39c52e95b712:/# exit
+exit
+chlskgus7895030@c6r5s5 ~ % docker run -dit --name ubuntu-keep ubuntu bash
+9db3aecee4996ac7a1947784cc44b96933e220c376467fa239288dc4ca1a18e6
+chlskgus7895030@c6r5s5 ~ % docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS         PORTS     NAMES
+9db3aecee499   ubuntu    "bash"    7 seconds ago   Up 7 seconds             ubuntu-keep
+chlskgus7895030@c6r5s5 ~ % docker attach ubuntu-keep
+root@9db3aecee499:/# echo "attach test"
+attach test
+root@9db3aecee499:/# 
+
+chlskgus7895030@c6r5s5 ~ % docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED          STATUS          PORTS     NAMES
+9db3aecee499   ubuntu    "bash"    10 minutes ago   Up 10 minutes             ubuntu-keep
+chlskgus7895030@c6r5s5 ~ % docker attach ubuntu-keep
+root@9db3aecee499:/# exit
+exit
+chlskgus7895030@c6r5s5 ~ % docker ps -a             
+CONTAINER ID   IMAGE         COMMAND                   CREATED          STATUS                      PORTS     NAMES
+9db3aecee499   ubuntu        "bash"                    13 minutes ago   Exited (0) 13 seconds ago             ubuntu-keep
+39c52e95b712   ubuntu        "bash"                    15 minutes ago   Exited (0) 13 minutes ago             ubuntu-lab
+041d3f3a5729   hello-world   "/hello"                  17 minutes ago   Exited (0) 17 minutes ago             admiring_jemison
+f3798749f130   nginx         "/docker-entrypoint.…"   38 minutes ago   Exited (0) 29 minutes ago             nginx-lab
 chlskgus7895030@c6r5s5 ~ % 
+
+
