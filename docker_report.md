@@ -246,12 +246,11 @@ init.defaultbranch=main
 <summary><b>#22 VSCode - GitHub 로그인 및 저장소 연동</b></summary>
 
 ```bash
-cd ~/docker-web-lab
 git init
 git branch -M main
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/사용자이름/저장소이름.git
+git remote add origin https://github.com/nahyun2/codr_01.git
 git push -u origin main
 ```
 
@@ -260,11 +259,10 @@ git push -u origin main
 git remote -v
 ```
 ```
-origin  https://github.com/사용자이름/저장소이름.git (fetch)
-origin  https://github.com/사용자이름/저장소이름.git (push)
+origin  https://github.com/nahun2/codr_01.git (fetch)
+origin  https://github.com/nahyun2/codr_01.git (push)
 ```
 
-> ⚠️ 스크린샷 첨부 시 토큰/비밀번호 등 **민감 정보는 마스킹** 필수
 </details>
 
 ---
