@@ -5,25 +5,36 @@
 
 ## 목차
 - [프로젝트 개요](#프로젝트-개요)
-- [실행 환경](#실행-환경)
+- [실습 환경](#실습-환경)
 - [수행 항목 체크리스트](#수행-항목-체크리스트)
 - [터미널 명령어 실습](terminal_practice.md)
 - [도커 및 깃허브 연동 실습](docker_report.md)
+- [프로젝트 구조](#프로젝트-구조)
 - [검증 방법](#검증-방법)
 - [트러블슈팅](#트러블슈팅)
 
 ---
 
 ## 프로젝트 개요
-<!-- 미션 목표 요약: 터미널/Docker/Git을 직접 세팅하고 실행 결과로 핵심 흐름을 검증한 과정 -->
+로컬 macOS 환경에서 셸(터미널) 기본기를 익힌 뒤, 이를 바탕으로 OrbStack 기반 Docker로 컨테이너를 다루고, 최종적으로 Git/GitHub를 통해 작업물을 원격 저장소에 연동하는 것까지 한 흐름으로 진행한 실습 과제입니다. "터미널 명령어 → 컨테이너 환경 조작 → 버전 관리 및 배포 준비"로 이어지는 하나의 개발 워크플로우를 구성합니다.
 
-## 실행 환경
+| 단계 | 실습 주제 | 핵심 도구 |
+|:---:|---|---|
+| 1 | 터미널 기초 조작 | `zsh`, 기본 유닉스 명령어 |
+| 2 | Docker 컨테이너 실습 | Docker, OrbStack |
+| 3 | Git/GitHub 연동 | Git, GitHub |
+ 
+---
+ 
+## 실습 환경
+ 
 | 항목 | 내용 |
-|---|---|
-| OS |15.7.4|
-| Shell / Terminal |/bin/zsh |
-| Docker 버전 |28.5.2 |
-| Git 버전 |2.53.0 |
+|------|------|
+| OS | macOS |
+| 셸 | zsh |
+| 컨테이너 런타임 | OrbStack (Docker 호환, v28.5.2) |
+| 에디터 | VSCode |
+| 버전 관리 | Git / GitHub |
 
 ## 수행 항목 체크리스트
 - [v] 터미널 기본 조작 (위치확인/목록/이동/생성/복사/이동·이름변경/삭제)
@@ -43,6 +54,27 @@
 - [v] Docker 볼륨 생성/연결 및 영속성 검증
 - [v] Git 사용자 정보 및 기본 브랜치 설정
 - [v] VSCode-GitHub 로그인 및 저장소 연동
+
+## 프로젝트 구조
+ 
+```
+docker-web-lab/
+├── app/
+│   ├── index.html
+│   └── Dockerfile
+├── screenshots/
+├── README.md
+├── docker_practice.md
+├── docker_report.md
+└── terminal_practice.md
+```
+ 
+- `app/` — Docker 이미지에 담을 정적 웹 콘텐츠(`index.html`)와 빌드 정의(`Dockerfile`)
+- `screenshots/` — 실습 과정 캡처 이미지 모음
+- `README.md` — 프로젝트 개요 (본 문서)
+- `docker_report.md` — Docker 실습 리포트
+- `terminal_practice.md` — 터미널 기초 실습 정리
+---
 
 ## 검증 방법
 <!-- 형식: 무엇을 확인했는지 → 사용한 명령 → 결과 위치(스크린샷/로그 링크) -->
@@ -78,15 +110,4 @@
   기존 컨테이너를 삭제한 뒤 재실행하여 정상 동작 확인.  
   → 도커는 컨테이너 이름이 유일해야 하므로, 삭제 후 재사용하거나 다른 이름을 지정해야 함.
 
-### 2. VSCode 터미널에서 detach 단축키(`Ctrl+P, Ctrl+Q`) 미작동
-- **문제**: `docker attach ubuntu-keep`으로 접속 후, detach 하려고 `Ctrl+P, Ctrl+Q`를 눌렀으나 detach가 되지 않고 VSCode 명령이 실행됨.
-- **원인 가설**: VSCode의 기본 단축키 `Ctrl+P`(빠른 열기)가 키 입력을 먼저 가로채 도커 detach 시퀀스가 컨테이너까지 전달되지 않는 것으로 추정.
-- **확인**: 
-  - macOS 기본 터미널(Terminal.app)에서 동일하게 attach 후 `Ctrl+P, Ctrl+Q` 입력 → 정상 detach 됨.
-  - → 도커 문제가 아니라 **에디터 단축키 충돌**임을 확인.
-- **해결/대안**: 
-  ```bash
-  docker attach --detach-keys="ctrl-]" ubuntu-keep
-  ```
-  detach 키를 `Ctrl + ]`로 변경하여 VSCode 단축키와 충돌 없이 정상 detach.  
-  **대안**: 실제 작업 시에는 `docker exec -it ubuntu-keep bash`로 새 셸을 열고 `exit`으로 빠져나오는 방식이 더 안전함(메인 프로세스에 영향 없음).
+
