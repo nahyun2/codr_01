@@ -1,18 +1,17 @@
-
 # 🐳 Docker & Git 실습 프로젝트
 
 > OrbStack 기반 Docker 컨테이너 실습 및 Git/GitHub 연동 과제
+> 사용자명은 `user`로 마스킹했습니다.
 
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
 ![OrbStack](https://img.shields.io/badge/OrbStack-000000?style=flat&logo=apple&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)
-![VSCode](https://img.shields.io/badge/VSCode-007ACC?style=flat&logo=visualstudiocode&logoColor=white)
 
 ---
 
 ## 📖 목차
-- [실습 환경](#-실습-환경)
+- [0. 환경 확인](#0-환경-확인)
 - [1. Docker 기초](#1-docker-기초)
 - [2. 컨테이너 상호작용](#2-컨테이너-상호작용)
 - [3. 이미지 빌드](#3-이미지-빌드)
@@ -20,211 +19,368 @@
 - [5. Git & GitHub](#5-git--github)
 - [실습 요약](#-실습-요약)
 
+
 ---
 
-## 🖥 실습 환경
+## 0. 환경 확인
 
-| 항목 | 내용 |
-|------|------|
-| OS | macOS |
-| 컨테이너 런타임 | OrbStack (Docker 호환) |
-| 에디터 | VSCode |
-| 버전 관리 | Git / GitHub |
+```bash
+docker --version
+```
+```
+Docker version 28.5.2, build ecc6942
+```
+
+```bash
+docker info
+```
+```
+Client:
+ Version:    28.5.2
+ Context:    orbstack
+
+Server:
+ Server Version: 28.5.2
+ Storage Driver: overlay2
+ Cgroup Driver: cgroupfs
+ Cgroup Version: 2
+ Operating System: OrbStack
+ Architecture: x86_64
+ CPUs: 6
+ Total Memory: 15.67GiB
+ Default Runtime: runc
+```
+- OrbStack이 Docker CLI와 완전히 호환되며, `docker` 명령어를 그대로 사용할 수 있음을 확인하였다.
 
 ---
 
 ## 1. Docker 기초
 
-<details>
-<summary><b>#8 이미지 다운로드 (docker pull)</b></summary>
+### #8 이미지 다운로드 (docker pull)
 
 ```bash
 docker pull nginx
 ```
+```
+Using default tag: latest
+latest: Pulling from library/nginx
+26c307b5e35a: Pull complete
+3c55dc422a81: Pull complete
+...
+Status: Downloaded newer image for nginx:latest
+docker.io/library/nginx:latest
+```
+
+```bash
+docker images
+```
+```
+REPOSITORY   TAG       IMAGE ID       CREATED        SIZE
+nginx        latest    5253dc86cc93   11 hours ago   161MB
+```
 - nginx 공식 이미지를 정상적으로 다운로드하였다.
-</details>
 
-<details>
-<summary><b>#9 컨테이너 실행 (docker run)</b></summary>
+### #9 컨테이너 실행 (docker run)
 
 ```bash
-docker run --name my-nginx -d -p 8080:80 nginx
+docker run -d --name nginx-lab -p 8080:80 nginx
 ```
-이름 중복 에러 발생 → 기존 컨테이너 삭제 후 재실행:
+```
+docker: Error response from daemon: Conflict. The container name "/nginx-lab" is already in use...
+```
+이름 중복 에러 발생 → 기존 컨테이너 확인:
 ```bash
-docker rm -f my-nginx
-docker run --name my-nginx -d -p 8080:80 nginx
+docker ps
 ```
-- nginx 컨테이너가 정상 실행됨을 확인하였다.
-</details>
+```
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+f3798749f130   nginx     "/docker-entrypoint.…"   6 minutes ago   Up 6 minutes   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   nginx-lab
+```
+- 동일한 이름의 컨테이너가 이미 실행 중이어서 충돌이 발생함을 확인하였다. (삭제 후 재실행하거나 이름을 바꿔 실행하면 해결)
 
-<details>
-<summary><b>#10 컨테이너 모니터링 (logs / stats)</b></summary>
+### #10 컨테이너 모니터링 (logs / stats)
 
 ```bash
-docker logs my-nginx
-docker stats
+docker logs nginx-lab
 ```
-- 로그 확인 및 실시간 리소스 모니터링 후 `Ctrl+C`로 종료하였다.
-</details>
+```
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2026/08/05 11:13:03 [notice] 1#1: using the "epoll" event method
+2026/08/05 11:13:03 [notice] 1#1: nginx/1.31.3
+2026/08/05 11:13:03 [notice] 1#1: start worker processes
+```
 
-<details>
-<summary><b>#11 hello-world 실행</b></summary>
+```bash
+docker stats nginx-lab
+```
+```
+CONTAINER ID   NAME        CPU %     MEM USAGE / LIMIT   MEM %     NET I/O   BLOCK I/O   PIDS
+f3798749f130   nginx-lab   --        -- / --             --        --        --          --
+```
+`Ctrl+C`로 종료 후 컨테이너 정리:
+```bash
+docker stop nginx-lab
+docker ps
+docker ps -a
+```
+```
+CONTAINER ID   IMAGE     COMMAND                   CREATED         STATUS                      PORTS     NAMES
+f3798749f130   nginx     "/docker-entrypoint.…"   9 minutes ago   Exited (0) 25 seconds ago             nginx-lab
+```
+- 로그 확인 및 실시간 리소스 모니터링을 수행하고, `docker stop` 후 `docker ps -a`로 종료된 컨테이너 상태를 확인하였다.
+
+### #11 hello-world 실행
 
 ```bash
 docker run hello-world
 ```
+```
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+```
 - 이미지 자동 다운로드 후 정상 동작 메시지를 확인하였다.
-</details>
 
 ---
 
 ## 2. 컨테이너 상호작용
 
-<details>
-<summary><b>#12 Ubuntu 컨테이너 진입</b></summary>
+### #12 Ubuntu 컨테이너 진입
 
 ```bash
-docker run -it ubuntu bash
+docker run -it --name ubuntu-lab ubuntu bash
 ```
-내부 명령어 수행:
+```
+Unable to find image 'ubuntu:latest' locally
+latest: Pulling from library/ubuntu
+Status: Downloaded newer image for ubuntu:latest
+```
+컨테이너 내부에서:
 ```bash
 ls
-echo "hello"
+echo "hello docker"
 pwd
+exit
+```
+```
+bin   dev  home  lib64  mnt  proc  run   srv  tmp  var
+boot  etc  lib   media  opt  root  sbin  sys  usr
+hello docker
+/
 ```
 - 컨테이너 내부 셸에서 기본 명령어를 정상 수행하였다.
-</details>
 
-<details>
-<summary><b>#13 attach / exec / detach 차이</b></summary>
+### #13 attach / exec / detach 차이
 
 ```bash
 docker run -dit --name ubuntu-keep ubuntu bash
+docker ps
+```
+```
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS         PORTS     NAMES
+9db3aecee499   ubuntu    "bash"    7 seconds ago   Up 7 seconds             ubuntu-keep
 ```
 
-**attach** (detach 키 변경: VSCode 단축키 충돌 회피)
+**attach** (메인 프로세스에 연결)
 ```bash
-docker attach --detach-keys="ctrl-]" ubuntu-keep
+docker attach ubuntu-keep
+```
+```
+root@9db3aecee499:/# echo "attach test"
+attach test
 ```
 
-**exec** (새 셸 실행)
+이후 다시 attach하여 `exit` 실행:
 ```bash
-docker exec -it ubuntu-keep bash
+docker attach ubuntu-keep
+```
+```
+root@9db3aecee499:/# exit
 exit
+```
+
+```bash
+docker ps -a
+```
+```
+CONTAINER ID   IMAGE         COMMAND                   CREATED          STATUS                      PORTS     NAMES
+9db3aecee499   ubuntu        "bash"                    13 minutes ago   Exited (0) 13 seconds ago             ubuntu-keep
+39c52e95b712   ubuntu        "bash"                    15 minutes ago   Exited (0) 13 minutes ago             ubuntu-lab
+041d3f3a5729   hello-world   "/hello"                  17 minutes ago   Exited (0) 17 minutes ago             admiring_jemison
+f3798749f130   nginx         "/docker-entrypoint.…"   38 minutes ago   Exited (0) 29 minutes ago             nginx-lab
 ```
 
 | 명령어 | 설명 |
 |--------|------|
-| `attach` | 실행 중인 컨테이너의 메인 프로세스에 연결 |
-| `exec` | 컨테이너 내부에 새 셸 실행 |
-| `detach` | 컨테이너 종료 없이 빠져나옴 (`Ctrl + ]`) |
+| `attach` | 실행 중인 컨테이너의 메인 프로세스에 연결. **여기서 `exit`을 입력하면 메인 프로세스가 종료되어 컨테이너 자체가 정지됨** |
+| `exec` | 컨테이너 내부에 새 셸을 실행. `exit`해도 메인 프로세스는 유지되어 컨테이너가 계속 실행됨 |
+| `detach` | 컨테이너를 종료하지 않고 빠져나옴 (`Ctrl + P, Ctrl + Q`, 또는 `--detach-keys`로 키 조합 변경 가능) |
 
-- `exit` 후에도 컨테이너가 유지됨을 `docker ps`로 확인하였다.
-</details>
+- `attach` 상태에서 `exit`을 입력하면 컨테이너 메인 프로세스가 종료되어 컨테이너가 `Exited` 상태가 되는 것을 확인하였다. (`exec`로 접속했다면 `exit` 후에도 컨테이너가 유지됨)
 
 ---
 
 ## 3. 이미지 빌드
 
-<details>
-<summary><b>#14 베이스 이미지 선정 & 정적 콘텐츠 준비</b></summary>
+### #14 베이스 이미지 선정 & 정적 콘텐츠 준비
 
 - 베이스 이미지: `nginx:alpine`
 - 배포용 `index.html` 정적 파일 준비
-</details>
 
-<details>
-<summary><b>#15 Dockerfile 작성</b></summary>
+```bash
+mkdir -p ~/docker-web-lab/app
+cd ~/docker-web-lab
+cat > app/index.html <<'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Docker Web Lab</title>
+</head>
+<body>
+  <h1>Docker 커스텀 이미지 실습 성공</h1>
+  <p>베이스 이미지: nginx:alpine</p>
+</body>
+</html>
+EOF
+```
 
-```dockerfile
+### #15 Dockerfile 작성
+
+```bash
+cat > Dockerfile <<'EOF'
 FROM nginx:alpine
 
-# 환경변수 설정
-ENV APP_ENV=production
-
-# curl 설치
 RUN apk add --no-cache curl
 
-# 정적 콘텐츠 교체
+ENV APP_NAME="docker-web-lab"
+
 COPY app/index.html /usr/share/nginx/html/index.html
 
-# 헬스체크 추가
-HEALTHCHECK --interval=30s --timeout=3s \
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD curl -f http://localhost/ || exit 1
+EOF
 ```
-- curl 설치, ENV, COPY, HEALTHCHECK를 포함하여 작성하였다.
-</details>
+- curl 설치(`RUN`), 환경변수(`ENV`), 정적 파일 교체(`COPY`), 헬스체크(`HEALTHCHECK`)를 포함하여 작성하였다.
 
-<details>
-<summary><b>#16 이미지 빌드 및 실행</b></summary>
+### #16 이미지 빌드 및 실행
 
 ```bash
-docker build -t my-web:1.0 .
-docker run -d --name my-web -p 8080:80 my-web:1.0
+docker build -t my-nginx-lab:v1 .
 ```
-- 빌드 성공 및 포트 `8080:80` 매핑으로 실행하였다.
-</details>
-
-<details>
-<summary><b>#17 접속 검증</b></summary>
+```
+[+] Building 7.5s (8/8) FINISHED
+ => [internal] load build definition from Dockerfile         0.2s
+ => [1/3] FROM docker.io/library/nginx:alpine                3.0s
+ => [2/3] RUN apk add --no-cache curl                        0.8s
+ => [3/3] COPY app/index.html /usr/share/nginx/html/index.html  0.2s
+ => exporting to image                                       0.2s
+ => => naming to docker.io/library/my-nginx-lab:v1
+```
 
 ```bash
-curl http://localhost:8080
+docker run -d --name my-nginx-web -p 8080:80 my-nginx-lab:v1
+docker ps
 ```
-- 브라우저와 `curl`로 정적 페이지 정상 응답을 확인하였다.
-</details>
+```
+CONTAINER ID   IMAGE             COMMAND                  CREATED          STATUS                            PORTS                                     NAMES
+31f48e61031d   my-nginx-lab:v1   "/docker-entrypoint.…"   11 seconds ago   Up 10 seconds (health: starting)  0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   my-nginx-web
+```
+- 빌드 성공 및 포트 `8080:80` 매핑으로 실행하였다. `STATUS`에 `(health: starting)`이 표시되어 `HEALTHCHECK`가 정상 동작 중임을 확인할 수 있다.
+
+### #17 접속 검증
+
+```bash
+docker logs my-nginx-web
+```
+```
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2026/08/05 12:03:24 [notice] 1#1: nginx/1.31.3
+::1 - - [05/Aug/2026:12:03:54 +0000] "GET / HTTP/1.1" 200 267 "-" "curl/8.21.0" "-"
+```
+- 브라우저와 `curl`로 정적 페이지에 정상 응답(200)이 오는 것을 확인하였다.
+
+> 참고: Dockerfile을 수정하지 않은 상태에서 `docker build`를 다시 실행하면 아래처럼 각 단계가 `CACHED`로 표시되며 빠르게 완료된다.
+> ```
+> => CACHED [2/3] RUN apk add --no-cache curl        0.0s
+> => CACHED [3/3] COPY app/index.html ...             0.0s
+> ```
+> 또한 이미 사용 중인 컨테이너 이름으로 다시 `docker run`을 실행하면 `Conflict` 에러가 발생하므로, 기존 컨테이너를 삭제(`docker rm -f`)하거나 다른 이름을 사용해야 한다.
 
 ---
 
 ## 4. 데이터 관리
 
-<details>
-<summary><b>#18 바인드 마운트로 변경 반영 검증</b></summary>
+### #18 바인드 마운트로 변경 반영 검증
 
 ```bash
+cd ~/docker-web-lab
 docker run -d --name my-nginx-bind -p 8081:80 \
   -v "$(pwd)/app:/usr/share/nginx/html" nginx:alpine
 ```
+```
+94176e3287bdac2a79d10761e73d00f5884f274e3fb7a77b703a8c058b7c0fd6
+```
 
-호스트 파일 수정 후 확인:
 ```bash
 curl http://localhost:8081
 ```
-- 호스트에서 수정한 내용이 컨테이너에 **즉시 반영**됨을 확인하였다.
-</details>
+```
+<h1>Docker 커스텀 이미지 실습 성공</h1>
+<p>베이스 이미지: nginx:alpine</p>
+```
 
-<details>
-<summary><b>#19 Docker 볼륨 생성 및 연결</b></summary>
+호스트에서 `app/index.html` 내용을 직접 수정한 뒤 다시 요청:
+```bash
+curl http://localhost:8081
+```
+```
+<h1>바인드 마운트 변경 반영 성공</h1>
+<p>호스트에서 수정한 내용입니다.</p>
+```
+- 컨테이너를 재시작하지 않아도 호스트에서 수정한 파일 내용이 **즉시 반영**됨을 확인하였다. (바인드 마운트는 호스트 디렉토리를 컨테이너 경로에 실시간으로 연결)
+
+### #19 Docker 볼륨 생성 및 연결
 
 ```bash
 docker volume create mydata
+docker volume ls
+```
+```
+mydata
+DRIVER    VOLUME NAME
+local     mydata
+```
+
+```bash
 docker run -dit --name vol-test -v mydata:/data ubuntu bash
 docker exec vol-test bash -c 'echo "hello docker volume" > /data/message.txt && cat /data/message.txt'
 ```
-- 볼륨을 생성하고 `/data`에 연결하여 데이터를 저장하였다.
-</details>
+```
+hello docker volume
+```
+- 볼륨을 생성하고 `/data` 경로에 연결하여 데이터를 저장하였다.
 
-<details>
-<summary><b>#20 볼륨 영속성 검증</b></summary>
+### #20 볼륨 영속성 검증
 
 ```bash
-# 컨테이너 삭제 (볼륨 유지)
 docker rm -f vol-test
-
-# 동일 볼륨으로 새 컨테이너 실행
 docker run -dit --name vol-test2 -v mydata:/data ubuntu bash
 docker exec vol-test2 cat /data/message.txt
 ```
-- 컨테이너 삭제 후에도 데이터가 유지됨을 확인하여 **영속성**을 검증하였다.
-</details>
+```
+hello docker volume
+```
+- `vol-test` 컨테이너를 삭제한 뒤 동일한 볼륨(`mydata`)을 새 컨테이너(`vol-test2`)에 연결했을 때도 이전에 저장한 데이터가 그대로 남아있음을 확인하여 **볼륨의 영속성**을 검증하였다.
 
 ---
 
 ## 5. Git & GitHub
 
-<details>
-<summary><b>#21 Git 사용자 정보 및 기본 브랜치 설정</b></summary>
+### #21 Git 사용자 정보 및 기본 브랜치 설정
 
 ```bash
 git config --global user.name "본인이름"
@@ -232,25 +388,21 @@ git config --global user.email "본인이메일@example.com"
 git config --global init.defaultBranch main
 git config --global --list
 ```
-
-결과 예시:
 ```
 user.name=홍길동
 user.email=hong@example.com
 init.defaultbranch=main
 ```
 - Git 사용자 정보와 기본 브랜치(`main`)를 설정하였다.
-</details>
 
-<details>
-<summary><b>#22 VSCode - GitHub 로그인 및 저장소 연동</b></summary>
+### #22 VSCode - GitHub 로그인 및 저장소 연동
 
 ```bash
 git init
 git branch -M main
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/nahyun2/codr_01.git
+git remote add origin https://github.com/<username>/<repo>.git
 git push -u origin main
 ```
 
@@ -259,11 +411,10 @@ git push -u origin main
 git remote -v
 ```
 ```
-origin  https://github.com/nahun2/codr_01.git (fetch)
-origin  https://github.com/nahyun2/codr_01.git (push)
+origin  https://github.com/<username>/<repo>.git (fetch)
+origin  https://github.com/<username>/<repo>.git (push)
 ```
-
-</details>
+- 로컬 저장소를 초기화하고 GitHub 원격 저장소와 연동하여 최초 커밋을 push하였다.
 
 ---
 
@@ -286,5 +437,3 @@ origin  https://github.com/nahyun2/codr_01.git (push)
 | #20 | 볼륨 영속성 | ✅ |
 | #21 | Git 설정 | ✅ |
 | #22 | GitHub 연동 | ✅ |
-
----
