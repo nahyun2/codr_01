@@ -1,5 +1,7 @@
 # 터미널 조작 실습 정리
 
+> 아래 예시의 사용자명은 `user`로 마스킹했습니다.
+
 ## 1. 경로 이동 관련 명령어
 
 | 명령어 | 의미 |
@@ -12,9 +14,38 @@
 | `cd .` | 현재 디렉토리 유지 (아무 변화 없음) — `.`은 "현재 위치"를 가리키는 상대경로 표기 |
 
 **절대경로 vs 상대경로**
-- 절대경로: 루트(`/`)부터 시작하는 전체 경로. 예: `/Users/chlskgus7895030/Desktop` — 어디서 실행하든 항상 같은 위치를 가리킴
+- 절대경로: 루트(`/`)부터 시작하는 전체 경로. 예: `/Users/user/Desktop` — 어디서 실행하든 항상 같은 위치를 가리킴
 - 상대경로: 현재 위치를 기준으로 한 경로. 예: `Desktop`, `..`, `.` — 실행하는 위치에 따라 가리키는 대상이 달라짐
-- `cd Desktop`(상대경로)과 `cd /Users/chlskgus7895030/Desktop`(절대경로)은 홈 디렉토리에 있을 땐 결과가 같지만, 다른 위치에서 실행하면 상대경로 쪽만 결과가 달라짐
+- `cd Desktop`(상대경로)과 `cd /Users/user/Desktop`(절대경로)은 홈 디렉토리에 있을 땐 결과가 같지만, 다른 위치에서 실행하면 상대경로 쪽만 결과가 달라짐
+
+### 재현 예시
+```
+user@host ~ % pwd
+/Users/user
+user@host ~ % ls -al
+total 8
+drwxr-x---+ 14 user  user   448  8  5 15:26 .
+drwxr-xr-x   9 root  admin  288  8  5 15:20 ..
+-r--------   1 user  user     8  8  5 15:20 .CFUserTextEncoding
+drwx------+  2 user  user    64  8  5 15:20 .Trash
+drwxr-xr-x   5 user  user   160  8  5 15:32 .vscode
+drwx------   3 user  user    96  8  5 15:26 .zsh_sessions
+drwx------+  3 user  user    96  8  5 15:20 Desktop
+drwx------+  3 user  user    96  8  5 15:20 Documents
+drwx------+  3 user  user    96  8  5 15:20 Downloads
+drwx------@ 76 user  user  2432  8  5 15:31 Library
+drwx------   3 user  user    96  8  5 15:20 Movies
+drwx------+  3 user  user    96  8  5 15:20 Music
+drwx------+  4 user  user   128  8  5 15:20 Pictures
+drwxr-xr-x+  4 user  user   128  8  5 15:20 Public
+
+user@host ~ % cd ..
+user@host /Users % cd user
+user@host ~ % cd Desktop
+user@host Desktop % cd .
+user@host Desktop % cd ..
+user@host ~ %
+```
 
 ## 2. 생성 / 조회 명령어
 
@@ -27,12 +58,49 @@
 
 → `cat`은 파일 전용, `cd`는 디렉토리 전용이라는 점이 실습으로 확인됨.
 
+### 재현 예시
+```
+user@host ~ % mkdir test1
+user@host ~ % touch test.txt
+user@host ~ % ls
+Desktop    Downloads   Movies     Pictures    test.txt
+Documents  Library     Music      Public      test1
+
+user@host ~ % cat test1
+cat: test1: Is a directory
+
+user@host ~ % cat test.txt
+user@host ~ % cd test.txt
+cd: not a directory: test.txt
+
+user@host ~ % cd test1
+user@host test1 % cd ..
+user@host ~ % cd test1
+user@host test1 % ls
+user@host test1 % touch test2.txt
+user@host test1 % ls
+test2.txt
+user@host test1 % cd ..
+```
+
 ## 3. 파일 내용 편집 (리다이렉션)
 
 | 명령어 | 의미 |
 |---|---|
 | `echo "내용" > 파일` | `>`는 **덮어쓰기**. 기존 내용이 있어도 새 내용으로 대체 |
 | `echo "내용" >> 파일` | `>>`는 **이어쓰기(append)**. 기존 내용 뒤에 새 줄 추가 |
+
+### 재현 예시
+```
+user@host ~ % echo "안녕하세요" > test.txt
+user@host ~ % cat test.txt
+안녕하세요
+
+user@host ~ % echo "반가워요" >> test.txt
+user@host ~ % cat test.txt
+안녕하세요
+반가워요
+```
 
 ## 4. 복사 / 이동 / 삭제
 
@@ -43,6 +111,30 @@
 | `rm 파일` | 파일 삭제 |
 | `rm 디렉토리` | 에러 발생 (`is a directory`) — 일반 `rm`은 파일만 삭제 가능 |
 | `rm -r 디렉토리` | `-r`(recursive) 옵션으로 디렉토리와 내부 파일까지 재귀적으로 삭제 |
+
+### 재현 예시
+```
+user@host ~ % cp test.txt memo.txt
+user@host ~ % cat memo.txt
+안녕하세요
+반가워요
+
+user@host ~ % mv memo.txt test1
+user@host ~ % cd test1
+user@host test1 % ls
+memo.txt   test2.txt
+user@host test1 % rm test2.txt
+user@host test1 % ls
+memo.txt
+user@host test1 % cd ..
+
+user@host ~ % rm test1
+rm: test1: is a directory
+user@host ~ % rm -r test1
+user@host ~ % ls
+Desktop    Downloads   Movies     Pictures    test.txt
+Documents  Library     Music      Public
+```
 
 ## 5. 파일 권한 (chmod)
 
@@ -61,10 +153,40 @@
 - `644` = 소유자 rw-(6), 그룹 r--(4), 기타 r--(4) → 일반 문서/설정 파일에 흔히 쓰는 조합 (실행 권한 불필요)
 - 기호 표기(`+`, `-`, `u/g/o`)는 기존 권한에서 일부만 조정할 때, 숫자 표기(`770` 등)는 권한 전체를 한 번에 지정할 때 사용
 
+### 재현 예시
+```
+user@host ~ % chmod +w test.txt
+user@host ~ % ls -l test.txt
+-rw-r--r--  1 user  user  29  8  5 15:47 test.txt
+
+user@host ~ % chmod +x test.txt
+user@host ~ % ls -l test.txt
+-rwxr-xr-x  1 user  user  29  8  5 15:47 test.txt
+
+user@host ~ % chmod u-x test.txt
+user@host ~ % ls -l test.txt
+-rw-r-xr-x  1 user  user  29  8  5 15:47 test.txt
+
+user@host ~ % chmod 770 test.txt
+user@host ~ % ls -l test.txt
+-rwxrwx---  1 user  user  29  8  5 15:47 test.txt
+
+user@host ~ % mkdir project
+user@host ~ % chmod 007 project
+user@host ~ % ls -l
+total 8
+drwxrwx---   6 user  user   192  8  5 15:57 Desktop
+...
+d------rwx   2 user  user    64  8  5 16:15 project
+-rwxrwx---   1 user  user    29  8  5 15:47 test.txt
+```
+
 ## 6. 실습 화면
 
-![터미널 실습 화면 1 - 디렉토리 이동/파일 생성/복사/삭제](<img width="1148" height="1970" alt="image" src="https://github.com/user-attachments/assets/ccd5a4d0-4074-4cf3-be60-358026f71784" />
-)
+### 터미널 실습 화면 1 - 디렉토리 이동/파일 생성/복사/삭제
+<img width="1148" height="1970" alt="image" src="https://github.com/user-attachments/assets/ccd5a4d0-4074-4cf3-be60-358026f71784" />
 
-![터미널 실습 화면 2 - 파일/디렉토리 권한 변경(chmod)](<img width="1162" height="2532" alt="image" src="https://github.com/user-attachments/assets/4e09d677-4aa2-4c52-8b6d-b350db65d451" />
-)
+
+### 터미널 실습 화면 2 - 파일/디렉토리 권한 변경(chmod)
+<img width="1162" height="2532" alt="image" src="https://github.com/user-attachments/assets/4e09d677-4aa2-4c52-8b6d-b350db65d451" />
+
