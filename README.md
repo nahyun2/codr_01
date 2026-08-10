@@ -47,18 +47,18 @@
 ## 검증 방법
 <!-- 형식: 무엇을 확인했는지 → 사용한 명령 → 결과 위치(스크린샷/로그 링크) -->
 
-| 검증 대상 | 사용 명령 | 결과 위치 |
+| 검증 대상 | 사용 명령 |
 |---|---|---|
-| Docker 설치 확인 | `docker --version` | |
-| Docker 데몬 확인 | `docker info` | |
-| 이미지 목록 | `docker images` | |
-| 컨테이너 목록 | `docker ps -a` | |
-| 컨테이너 로그 | `docker logs <container>` | |
-| 리소스 사용량 | `docker stats` | |
-| 포트 매핑 접속 | 브라우저 접속 / `curl` | |
-| 바인드 마운트 반영 | 호스트 파일 수정 → 컨테이너 내부 확인 | |
-| 볼륨 영속성 | 컨테이너 삭제 후 재생성 → 데이터 확인 | |
-| Git 설정 | `git config --list` | |
+| Docker 설치 확인 | `docker --version` |
+| Docker 데몬 확인 | `docker info` |
+| 이미지 목록 | `docker images` |
+| 컨테이너 목록 | `docker ps -a` |
+| 컨테이너 로그 | `docker logs <container>` |
+| 리소스 사용량 | `docker stats` |
+| 포트 매핑 접속 | 브라우저 접속 / `curl` |
+| 바인드 마운트 반영 | 호스트 파일 수정 → 컨테이너 내부 확인 |
+| 볼륨 영속성 | 컨테이너 삭제 후 재생성 → 데이터 확인 |
+| Git 설정 | `git config --list` |
 
 ## 트러블슈팅
 
