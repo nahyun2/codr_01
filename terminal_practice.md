@@ -63,6 +63,8 @@
 
 ## 6. 실습 화면
 
-![터미널 실습 화면 1 - 디렉토리 이동/파일 생성/복사/삭제](images/terminal-practice-01.png)
+![터미널 실습 화면 1 - 디렉토리 이동/파일 생성/복사/삭제](<img width="1148" height="1970" alt="image" src="https://github.com/user-attachments/assets/ccd5a4d0-4074-4cf3-be60-358026f71784" />
+)
 
-![터미널 실습 화면 2 - 파일/디렉토리 권한 변경(chmod)](images/terminal-practice-02.png)
+![터미널 실습 화면 2 - 파일/디렉토리 권한 변경(chmod)](<img width="1162" height="2532" alt="image" src="https://github.com/user-attachments/assets/4e09d677-4aa2-4c52-8b6d-b350db65d451" />
+)
