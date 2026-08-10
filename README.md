@@ -8,6 +8,7 @@
 - [실행 환경](#실행-환경)
 - [수행 항목 체크리스트](#수행-항목-체크리스트)
 - [터미널 명령어 실습](terminal_practice.md)
+- [도커 및 깃허브 연동 실습](docker_report.md)
 - [검증 방법](#검증-방법)
 - [트러블슈팅](#트러블슈팅)
 
@@ -33,15 +34,15 @@
 - [v] Docker 이미지 다운로드/목록 확인
 - [v] Docker 컨테이너 실행/중지/목록 확인
 - [v] Docker 로그/리소스 확인
-- [ ] hello-world 컨테이너 실행
-- [ ] ubuntu 컨테이너 진입 및 내부 명령 수행
-- [ ] 컨테이너 종료 vs 유지 방식 비교 정리
-- [ ] 커스텀 Dockerfile 작성 및 이미지 빌드
-- [ ] 포트 매핑 접속 증거 확보
-- [ ] 바인드 마운트 변경 반영 검증
-- [ ] Docker 볼륨 생성/연결 및 영속성 검증
-- [ ] Git 사용자 정보 및 기본 브랜치 설정
-- [ ] VSCode-GitHub 로그인 및 저장소 연동
+- [v] hello-world 컨테이너 실행
+- [v] ubuntu 컨테이너 진입 및 내부 명령 수행
+- [v] 컨테이너 종료 vs 유지 방식 비교 정리
+- [v] 커스텀 Dockerfile 작성 및 이미지 빌드
+- [v] 포트 매핑 접속 증거 확보
+- [v] 바인드 마운트 변경 반영 검증
+- [v] Docker 볼륨 생성/연결 및 영속성 검증
+- [v] Git 사용자 정보 및 기본 브랜치 설정
+- [v] VSCode-GitHub 로그인 및 저장소 연동
 
 ## 검증 방법
 <!-- 형식: 무엇을 확인했는지 → 사용한 명령 → 결과 위치(스크린샷/로그 링크) -->
@@ -60,14 +61,32 @@
 | Git 설정 | `git config --list` | |
 
 ## 트러블슈팅
-### 1. 
-- **문제**: 
-- **원인 가설**: 
-- **확인**: 
-- **해결/대안**: 
 
-### 2. 
-- **문제**: 
-- **원인 가설**: 
+### 1. 컨테이너 이름 중복으로 run 실패
+- **문제**: `docker run --name my-nginx ...` 실행 시 `Conflict. The container name "/my-nginx" is already in use` 에러가 발생하며 컨테이너가 실행되지 않음.
+- **원인 가설**: 이전에 동일한 이름(`my-nginx`)으로 생성된 컨테이너가 남아 있어 이름이 중복된 것으로 추정.
 - **확인**: 
-- **해결/대안**:
+  ```bash
+  docker ps -a
+  ```
+  → 중지 상태(Exited)의 `my-nginx` 컨테이너가 목록에 존재함을 확인.
+- **해결/대안**: 
+  ```bash
+  docker rm -f my-nginx
+  docker run --name my-nginx -d -p 8080:80 nginx
+  ```
+  기존 컨테이너를 삭제한 뒤 재실행하여 정상 동작 확인.  
+  → 도커는 컨테이너 이름이 유일해야 하므로, 삭제 후 재사용하거나 다른 이름을 지정해야 함.
+
+### 2. VSCode 터미널에서 detach 단축키(`Ctrl+P, Ctrl+Q`) 미작동
+- **문제**: `docker attach ubuntu-keep`으로 접속 후, detach 하려고 `Ctrl+P, Ctrl+Q`를 눌렀으나 detach가 되지 않고 VSCode 명령이 실행됨.
+- **원인 가설**: VSCode의 기본 단축키 `Ctrl+P`(빠른 열기)가 키 입력을 먼저 가로채 도커 detach 시퀀스가 컨테이너까지 전달되지 않는 것으로 추정.
+- **확인**: 
+  - macOS 기본 터미널(Terminal.app)에서 동일하게 attach 후 `Ctrl+P, Ctrl+Q` 입력 → 정상 detach 됨.
+  - → 도커 문제가 아니라 **에디터 단축키 충돌**임을 확인.
+- **해결/대안**: 
+  ```bash
+  docker attach --detach-keys="ctrl-]" ubuntu-keep
+  ```
+  detach 키를 `Ctrl + ]`로 변경하여 VSCode 단축키와 충돌 없이 정상 detach.  
+  **대안**: 실제 작업 시에는 `docker exec -it ubuntu-keep bash`로 새 셸을 열고 `exit`으로 빠져나오는 방식이 더 안전함(메인 프로세스에 영향 없음).
